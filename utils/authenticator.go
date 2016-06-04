@@ -92,7 +92,10 @@ func BKsignRequest(baseURL string, method string, endPoint string, data string) 
 }
 
 // SCGenWSSEHeader returns WSSE header for authenticated requests
-func SCGenWSSEHeader() string {
+func SCGenWSSEHeader(username string) string {
+	if len(username) < 1 {
+		username = scusernanme
+	}
 	timeStamp := time.Now()
 	locale, _ := time.LoadLocation("GMT")
 	created := timeStamp.In(locale).Format("2006-01-02T15:04:05Z")
@@ -106,7 +109,7 @@ func SCGenWSSEHeader() string {
 	digest.Write([]byte(scsecret))
 
 	return fmt.Sprintf(`UsernameToken Username="%s", PasswordDigest="%s", Nonce="%s", Created="%s"`,
-		scusernanme,
+		username,
 		base64.StdEncoding.EncodeToString(digest.Sum(nil)),
 		base64.StdEncoding.EncodeToString(nonce),
 		created)

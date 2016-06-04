@@ -29,7 +29,7 @@ func BKpingRequest(URL string) (*http.Response, *models.BKpingResponse, error) {
 	return resp, &rslt, nil
 }
 
-// BKtaxonomyBuyerRequest returns DMP dites in JSON format
+// BKtaxonomyBuyerRequest returns DMP sites in JSON format
 func BKtaxonomyBuyerRequest(method string, URL string, data string) (*http.Response, *models.BKbuyerViewCategoryResult, error) {
 	resp, err := utils.CoreRequest(method, URL, data, nil)
 	if err != nil {
@@ -45,7 +45,7 @@ func BKtaxonomyBuyerRequest(method string, URL string, data string) (*http.Respo
 	return resp, &rslt, nil
 }
 
-// BKsiteRequest returns DMP dites in JSON format
+// BKsiteRequest returns DMP sites in JSON format
 func BKsiteRequest(method string, URL string, data string) (*http.Response, *models.BKsiteResult, error) {
 	resp, err := utils.CoreRequest(method, URL, data, nil)
 	if err != nil {

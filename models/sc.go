@@ -1,5 +1,10 @@
 package models
 
+// SCpingResponse returns API heartbeat status code
+type SCpingResponse struct {
+	Status int
+}
+
 // SCBookmarks is a collection of SC reporting bookmark folders
 type SCBookmarks struct {
 	Folders []*SCBookmarkFolderResult
