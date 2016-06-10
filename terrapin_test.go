@@ -13,7 +13,7 @@ import (
 func TestCallingApis(t *testing.T) {
 	method := "GET"
 	URL := "http://jsonplaceholder.typicode.com/posts/1"
-	data := ""
+	data := []byte("")
 
 	resp, err := utils.CoreRequest(method, URL, data, nil)
 	if err != nil {
@@ -27,7 +27,7 @@ func TestCallingApis(t *testing.T) {
 func TestGettingResponse(t *testing.T) {
 	method := "GET"
 	URL := "http://jsonplaceholder.typicode.com/posts/1"
-	data := ""
+	data := []byte("")
 
 	resp, _ := utils.CoreRequest(method, URL, data, nil)
 	var rslt models.TestResponse
@@ -42,7 +42,7 @@ func TestGettingResponse(t *testing.T) {
 func TestGettingOKStatus(t *testing.T) {
 	method := "GET"
 	URL := "http://jsonplaceholder.typicode.com/posts/1"
-	data := ""
+	data := []byte("")
 
 	resp, _ := utils.CoreRequest(method, URL, data, nil)
 	resp.Body.Close()

@@ -24,3 +24,20 @@ type SCBookmarkResult struct {
 	Name string `json:"name"`
 	Rsid string `json:"rsid"`
 }
+
+// SCMetricsRequest describes a SC metrics data request
+type SCMetricsRequest struct {
+	ReportDescription *SCMetricsReportDescription `json:"reportDescription"`
+}
+
+// SCMetricsReportDescription descibes a SC data request
+type SCMetricsReportDescription struct {
+	Source        string           `json:"source"`
+	ReportSuiteID string           `json:"reportSuiteID"`
+	Metrics       []SCMetricsArray `json:"metrics"`
+}
+
+// SCMetricsArray describes a collection of desired metrics
+type SCMetricsArray struct {
+	ID string `json:"id"`
+}

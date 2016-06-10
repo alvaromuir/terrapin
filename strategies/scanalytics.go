@@ -2,58 +2,75 @@ package strategies
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
-	"os"
 
 	"github.com/alvaromuir/terrapin/models"
 	"github.com/alvaromuir/terrapin/utils"
 )
 
-// SCpingRequest generates the method request
-func SCpingRequest(URL string, wsseAuth string) (*http.Response, *models.SCpingResponse, error) {
-	method := "GET"
-	data := ""
-	headers := map[string]string{
-		"Authorization": "WSSE profile=\"UsernameToken\"",
-		"X-WSSE":        wsseAuth,
-	}
+// SCGgetRealTimeSettings returns setup of realtime reports
+func SCGgetRealTimeSettings() (*http.Response, error) {
+	reqData := []byte(`{
+			"rsid_list":[
+				"verizontelecomres"
+				]
+			}`)
 
-	resp, err := utils.CoreRequest(method, URL, data, headers)
+	method := "POST"
+	URL := "https://api.omniture.com/admin/1.4/rest/?method=ReportSuite.GetRealTimeSettings"
+
+	resp, err := SCcallEndpoint(method, URL, reqData)
 	if err != nil {
-		resp.Body.Close()
-		fmt.Fprintf(os.Stderr, os.Args[0]+": %v", err)
-		os.Exit(1)
+		log.Fatalf("ERROR: %s", err)
+		return resp, err
 	}
-	var rslt models.SCpingResponse
-	if err := json.NewDecoder(resp.Body).Decode(&rslt); err != nil {
-		resp.Body.Close()
-		return resp, nil, err
-	}
-	resp.Body.Close()
-	return resp, &rslt, nil
+	return resp, nil
 }
 
-// SCGetReportBookmarks returns a list of user bookmarked reports
-func SCGetReportBookmarks(URL string, wsseAuth string) (*http.Response, *models.SCBookmarks, error) {
-	method := "GET"
-	data := ""
+// SCGgetRealTimeResults returns realtime results in raw format
+func SCGgetRealTimeResults(metrics []string) (*http.Response, error) {
+	var metricsArray []models.SCMetricsArray
+	for _, el := range metrics {
+		metricsArray = append(metricsArray, models.SCMetricsArray{ID: el})
+	}
+	jsonData := &models.SCMetricsRequest{
+		ReportDescription: &models.SCMetricsReportDescription{
+			Source:        "realtime",
+			ReportSuiteID: "verizontelecomres",
+			Metrics:       metricsArray,
+		},
+	}
+
+	reqString, err := json.Marshal(jsonData)
+	if err != nil {
+		log.Fatalf("ERROR: %s", err)
+		return nil, nil
+	}
+	reqData := []byte(string(reqString))
+
+	method := "POST"
+	URL := "https://api.omniture.com/admin/1.4/rest/?method=Report.Run"
+
+	resp, err := SCcallEndpoint(method, URL, reqData)
+	if err != nil {
+		log.Fatalf("ERROR: %s", err)
+		return resp, err
+	}
+	return resp, nil
+}
+
+// SCcallEndpoint returns a raw API response
+func SCcallEndpoint(method string, URL string, data []byte) (*http.Response, error) {
 	headers := map[string]string{
 		"Authorization": "WSSE profile=\"UsernameToken\"",
-		"X-WSSE":        wsseAuth,
+		"X-WSSE":        utils.SCGenWSSEHeader(""),
 	}
 
 	resp, err := utils.CoreRequest(method, URL, data, headers)
 	if err != nil {
-		defer resp.Body.Close()
-		fmt.Fprintf(os.Stderr, os.Args[0]+": %v", err)
-		os.Exit(1)
+		log.Fatalf("ERROR: %s", err)
+		return resp, err
 	}
-
-	var rslt models.SCBookmarks
-	if err := json.NewDecoder(resp.Body).Decode(&rslt); err != nil {
-		resp.Body.Close()
-		return resp, nil, err
-	}
-	return resp, &rslt, nil
+	return resp, nil
 }

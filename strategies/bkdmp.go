@@ -13,7 +13,7 @@ import (
 // BKpingRequest generates the method request
 func BKpingRequest(URL string) (*http.Response, *models.BKpingResponse, error) {
 	method := "GET"
-	data := ""
+	data := []byte("")
 	resp, err := utils.CoreRequest(method, URL, data, nil)
 	if err != nil {
 		resp.Body.Close()
@@ -30,7 +30,7 @@ func BKpingRequest(URL string) (*http.Response, *models.BKpingResponse, error) {
 }
 
 // BKtaxonomyBuyerRequest returns DMP sites in JSON format
-func BKtaxonomyBuyerRequest(method string, URL string, data string) (*http.Response, *models.BKbuyerViewCategoryResult, error) {
+func BKtaxonomyBuyerRequest(method string, URL string, data []byte) (*http.Response, *models.BKbuyerViewCategoryResult, error) {
 	resp, err := utils.CoreRequest(method, URL, data, nil)
 	if err != nil {
 		resp.Body.Close()
@@ -46,7 +46,7 @@ func BKtaxonomyBuyerRequest(method string, URL string, data string) (*http.Respo
 }
 
 // BKsiteRequest returns DMP sites in JSON format
-func BKsiteRequest(method string, URL string, data string) (*http.Response, *models.BKsiteResult, error) {
+func BKsiteRequest(method string, URL string, data []byte) (*http.Response, *models.BKsiteResult, error) {
 	resp, err := utils.CoreRequest(method, URL, data, nil)
 	if err != nil {
 		resp.Body.Close()
