@@ -11,6 +11,7 @@ import (
 
 // SCGgetRealTimeSettings returns setup of realtime reports
 func SCGgetRealTimeSettings() (*http.Response, error) {
+	// REVIEW: move this to models
 	reqData := []byte(`{
 			"rsid_list":[
 				"verizontelecomres"
@@ -28,24 +29,18 @@ func SCGgetRealTimeSettings() (*http.Response, error) {
 	return resp, nil
 }
 
-// SCGgetRealTimeResults returns realtime results in raw format
-func SCGgetRealTimeResults(metrics []string) (*http.Response, error) {
+// SCGgetRealTimeResults returns realtime results in JSON format
+func SCGgetRealTimeResults(metrics []string) (*http.Response, *models.SCRealtimeMetricsResult, error) {
 	var metricsArray []models.SCMetricsArray
 	for _, el := range metrics {
 		metricsArray = append(metricsArray, models.SCMetricsArray{ID: el})
 	}
-	jsonData := &models.SCMetricsRequest{
-		ReportDescription: &models.SCMetricsReportDescription{
-			Source:        "realtime",
-			ReportSuiteID: "verizontelecomres",
-			Metrics:       metricsArray,
-		},
-	}
+	jsonData := models.SCMetricsRequest{}
 
 	reqString, err := json.Marshal(jsonData)
 	if err != nil {
 		log.Fatalf("ERROR: %s", err)
-		return nil, nil
+		return nil, nil, err
 	}
 	reqData := []byte(string(reqString))
 
@@ -55,12 +50,17 @@ func SCGgetRealTimeResults(metrics []string) (*http.Response, error) {
 	resp, err := SCcallEndpoint(method, URL, reqData)
 	if err != nil {
 		log.Fatalf("ERROR: %s", err)
-		return resp, err
+		return resp, nil, err
 	}
-	return resp, nil
+	var rslt models.SCRealtimeMetricsResult
+	if err := json.NewDecoder(resp.Body).Decode(&rslt); err != nil {
+		log.Fatalf("ERROR: %s", err)
+		return resp, nil, err
+	}
+	return resp, &rslt, nil
 }
 
-// SCcallEndpoint returns a raw API response
+// SCcallEndpoint returns a raw SC API response
 func SCcallEndpoint(method string, URL string, data []byte) (*http.Response, error) {
 	headers := map[string]string{
 		"Authorization": "WSSE profile=\"UsernameToken\"",

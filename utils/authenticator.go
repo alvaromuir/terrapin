@@ -1,12 +1,15 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"strings"
@@ -17,34 +20,44 @@ import (
 
 var env = godotenv.Load(".env")
 
-// Add your API Keys below
-var bkuid = os.Getenv("BK_KEY")              // BlueKai API KEY
-var bksecretkey = os.Getenv("BK_SECRET")     // BlueKai API Secret
-var bkpartnerid = os.Getenv("BK_PARTNER_ID") // BlueKai partner ID
-
-var scusernanme = os.Getenv("ADOBE_USERNAME") // SiteCatalst API KEY
-var scsecret = os.Getenv("ADOBE_SECRET")      // SiteCatalst API Secret
-
-var bkBaseURLS = map[string]string{
-	"services": "http://services.bluekai.com/Services/WS/",
-	"taxonomy": "https://taxonomy.bluekai.com/taxonomy/",
-}
-
-var omnitureBaseURLS = map[string]string{
-	"admin": "https://api.omniture.com/admin/1.4/rest/",
-}
-
 // BKsignRequest returns a HMAC-SHA256 string for BlueKai JSON request
-func BKsignRequest(baseURL string, method string, endPoint string, data string) string {
+func BKsignRequest(callType string, method string, endPoint string, data []byte) string {
+	// Add your API Keys below
+	var bkuid = os.Getenv("BK_KEY")              // BlueKai API KEY
+	var bksecretkey = os.Getenv("BK_SECRET")     // BlueKai API Secret
+	var bkpartnerid = os.Getenv("BK_PARTNER_ID") // BlueKai partner ID
+
+	var bkBaseURLS = map[string]string{
+		"services": "http://services.bluekai.com/Services/WS/",
+		"taxonomy": "https://taxonomy.bluekai.com/taxonomy/",
+		"audience": "api.bluekai.com/audience/v1/",
+	}
+
+	var reqData string
+	if len(data) < 1 {
+		reqData = ""
+	} else {
+		jsonData := new(bytes.Buffer)
+		// if the data is not a JSON object
+		if bytes.Contains(data, []byte("=")) {
+			reqData = bytes.NewBuffer(data).String()
+		} else {
+			if err := json.Compact(jsonData, data); err != nil {
+				log.Fatalf("JSON ENCODING ERROR: %s", err)
+			}
+			reqData = jsonData.String()
+		}
+	}
 
 	var URL string
-	if baseURL == "services" {
+
+	if callType == "services" {
 		URL = bkBaseURLS["services"] + endPoint
 	}
 
-	if baseURL == "taxonomy" {
-		URL = bkBaseURLS["taxonomy"] + endPoint + "?" + data
-		if strings.HasPrefix(data, "parentCategory") {
+	if callType == "taxonomy" {
+		URL = bkBaseURLS["taxonomy"] + endPoint + "?" + reqData
+		if strings.HasPrefix(reqData, "parentCategory") {
 			URL += "&view=BUYER"
 		} else {
 			URL += "&view=OWNER"
@@ -71,8 +84,8 @@ func BKsignRequest(baseURL string, method string, endPoint string, data string) 
 		}
 	}
 
-	if data != "" {
-		stringToSign += data
+	if reqData != "" {
+		stringToSign += reqData
 	}
 
 	h := hmac.New(sha256.New, []byte(bksecretkey))
@@ -81,6 +94,7 @@ func BKsignRequest(baseURL string, method string, endPoint string, data string) 
 	u := url.QueryEscape(digest)
 
 	newURL := URL
+
 	if strings.Contains(URL, "?") {
 		newURL += "&"
 	} else {
@@ -93,6 +107,10 @@ func BKsignRequest(baseURL string, method string, endPoint string, data string) 
 
 // SCGenWSSEHeader returns WSSE header for authenticated requests
 func SCGenWSSEHeader(username string) string {
+
+	var scusernanme = os.Getenv("ADOBE_USERNAME") // SiteCatalst API KEY
+	var scsecret = os.Getenv("ADOBE_SECRET")      // SiteCatalst API Secret
+
 	if len(username) < 1 {
 		username = scusernanme
 	}

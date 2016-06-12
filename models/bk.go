@@ -1,10 +1,5 @@
 package models
 
-// BKpingResponse returns API heartbeat status code
-type BKpingResponse struct {
-	Status int
-}
-
 // BKbuyerViewCategoryResult is a collection of OwnerViewCategory types
 type BKbuyerViewCategoryResult struct {
 	Count        int  `json:"count"`
