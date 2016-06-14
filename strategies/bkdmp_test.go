@@ -12,7 +12,7 @@ import (
 
 func TestBKtaxonomyBuyerRequest(t *testing.T) {
 	_ = godotenv.Load("../.env")
-	data := []byte("parentCategory.id=301170")
+	data := 12345
 	resp, rslt, err := BKtaxonomyBuyerRequest(data)
 	if err != nil {
 		t.Errorf("An error has occured calling an API.")

@@ -41,8 +41,6 @@ type BKbuyerViewCategory struct {
 	} `json:"vertical"`
 }
 
-/* BKownerViewCategoryResult Not in use yet, @alvaromuir 04.10.2016 */
-
 // BKownerViewCategoryResult is a collection of BuyerViewCategory types
 type BKownerViewCategoryResult struct {
 	Count        int  `json:"count"`
